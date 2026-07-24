@@ -32,7 +32,7 @@ running natively on **Cielo Smart / Cielo LIO** POS terminals.
 Extracted directly from project version catalog (`gradle/libs.versions.toml`) and build
 configuration (`app/build.gradle.kts`):
 
-- **Kotlin & Tooling:** Kotlin `2.4.10`, Android Gradle Plugin `9.3.1`, KSP `2.3.10`
+- **Kotlin & Tooling:** Kotlin `2.4.0`, Android Gradle Plugin `9.3.1`, KSP `2.3.10`
 - **SDK Targets:** `compileSdk = 37`, `targetSdk = 29` (Cielo Smart LIO requirement), `minSdk = 24`
 - **UI & Layouts:** Jetpack Compose BOM `2026.06.01`, Material3 (`androidx.compose.material3`),
   Activity Compose `1.13.0`
@@ -203,6 +203,7 @@ When explicitly requested by the user to verify quality or before finishing task
 
 - **Explicit User Request Requirement for Commits and PRs:** NEVER create git commits or pull requests automatically unless the user explicitly requests you to do so.
 - **Explicit User Request Requirement for Gradle Quality Gates:** NEVER run `./gradlew ktlintCheck`, `./gradlew test`, or `./gradlew assembleDebug` quality gate commands automatically unless the user explicitly asks to run them or verify the build/tests.
+- **Unit Test Pattern:** All unit tests must follow the Given-When-Then pattern with inline comments (`// Given`, `// When`, `// Then`).
 - **Zero Unused Imports & Clean Syntax:** Always format code adhering to `ktlint` rules.
 - **Strict Architecture Boundaries:** Never import data layer classes directly into presentation layer Composables. Always pass through Domain Use Cases/Repositories.
 - **Idempotency Enforcement:** Ensure any code modifying transaction states uses Room transactions (`@Transaction`) to guarantee thread safety and data integrity.

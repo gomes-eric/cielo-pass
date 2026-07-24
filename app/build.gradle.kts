@@ -1,3 +1,10 @@
+import java.util.Properties
+
+val localProperties = Properties().apply {
+    val file = rootProject.file("local.properties")
+    if (file.exists()) load(file.inputStream())
+}
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
@@ -17,9 +24,12 @@ android {
         //noinspection ExpiredTargetSdkVersion
         targetSdk = 29
         versionCode = 1
-        versionName = "1.0"
+        versionName = "1.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField("String", "CIELO_CLIENT_ID", "\"${localProperties.getProperty("CIELO_CLIENT_ID", "")}\"")
+        buildConfigField("String", "CIELO_ACCESS_TOKEN", "\"${localProperties.getProperty("CIELO_ACCESS_TOKEN", "")}\"")
     }
 
     buildTypes {
@@ -39,6 +49,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -92,6 +103,10 @@ dependencies {
     // Kotlinx Serialization Core
     implementation(libs.kotlinx.serialization.core)
 
+    // Coroutines
+    implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.kotlinx.coroutines.android)
+
     // Dependency Injection (Koin)
     implementation(libs.koin.core)
     implementation(libs.koin.android)
@@ -120,6 +135,7 @@ dependencies {
     // Testing (Unit & Instrumented)
     testImplementation(libs.junit)
     testImplementation(libs.mockk)
+    testImplementation(libs.kotlinx.coroutines.test)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.espresso.core)
