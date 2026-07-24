@@ -1,0 +1,12 @@
+# Automation and repository policy
+/.github/ @gomes-eric
+
+# Workflow and action changes deserve explicit review
+/.github/workflows/ @gomes-eric
+/.github/rulesets/ @gomes-eric
+
+# Dependency automation and package policy
+/.github/dependabot.yml @gomes-eric
+/build.gradle.kts @gomes-eric
+/app/build.gradle.kts @gomes-eric
+/gradle/libs.versions.toml @gomes-eric
