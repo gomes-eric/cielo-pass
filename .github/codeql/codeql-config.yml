@@ -1,0 +1,10 @@
+# CodeQL configuration file for CieloPass.
+# Filters out temporary build directories, generated code, and local SDK artifacts.
+
+name: "CieloPass CodeQL Configuration"
+
+paths-ignore:
+  - "**/build/**"
+  - "**/.gradle/**"
+  - "**/generated/**"
+  - "**/*.kt.class"
