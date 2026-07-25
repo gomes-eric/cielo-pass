@@ -15,13 +15,13 @@ appropriate labels, and execute the PR creation.
 
 ## Workflow
 
-1. **Identify Context:** Determine the current branch and target branch (`main`).
+1. **Identify Context:** Determine the current branch and target branch (`master`).
 2. **Generate Title:** Format as `type(scope): subject` using the Conventional Commits rules.
 3. **Read Template:** Read `templates/pr-template.md` as the structural source.
 4. **Build Body:** Fill in the template with concrete technical details and file paths.
 5. **Assign Labels:** Select 3–5 labels based on type, priority, and context.
 6. **Create PR:** Create the pull request using GitHub MCP tool (`create_pull_request`), targeting
-   `main`. Fall back to `gh pr create` if MCP tool is unavailable.
+   `master`. Fall back to `gh pr create` if MCP tool is unavailable.
 
 ## Title Format
 
@@ -73,7 +73,7 @@ Call `create_pull_request` with:
 - `repo`: `cielo-pass`
 - `title`: `type(scope): subject`
 - `head`: `<current_branch>`
-- `base`: `main`
+- `base`: `master`
 - `body`: `<generated_body_content>`
 
 ### Fallback Method: GitHub CLI (`gh`)
@@ -81,7 +81,7 @@ Call `create_pull_request` with:
 If GitHub MCP is unavailable:
 
 ```bash
-gh pr create --base main --head <current_branch> --title "type(scope): subject" --body "<generated_body_content>"
+gh pr create --base master --head <current_branch> --title "type(scope): subject" --body "<generated_body_content>"
 ```
 
 ## Quality Checks
@@ -89,6 +89,6 @@ gh pr create --base main --head <current_branch> --title "type(scope): subject" 
 Before creating the PR, verify:
 
 - Current branch has pushed commits to origin.
-- Base branch is `main`.
+- Base branch is `master`.
 - Title matches `type(scope): subject`.
 - PR body is written in English and removes unused template sections.

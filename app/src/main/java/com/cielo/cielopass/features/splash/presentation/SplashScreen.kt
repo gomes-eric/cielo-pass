@@ -27,6 +27,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cielo.cielopass.R
+import com.cielo.cielopass.core.constants.SplashConstants.DEFAULT_APP_VERSION
+import com.cielo.cielopass.core.constants.SplashConstants.MSG_CHECKING_PENDING_TRANSACTIONS
 import com.cielo.cielopass.core.theme.CieloPassTheme
 import com.cielo.cielopass.features.splash.presentation.SplashEffect.NavigateToEvents
 import org.koin.androidx.compose.koinViewModel
@@ -50,7 +52,7 @@ fun SplashScreen(
         SplashScreenContent(
             isLoading = state.isLoading,
             statusText = state.error ?: state.statusText,
-            appVersion = state.config?.appVersion ?: "1.0.0",
+            appVersion = state.config?.appVersion ?: DEFAULT_APP_VERSION,
         )
     }
 }
@@ -59,7 +61,7 @@ fun SplashScreen(
 fun SplashScreenContent(
     isLoading: Boolean = true,
     statusText: String = stringResource(R.string.splash_default_status_text),
-    appVersion: String = "1.0.0",
+    appVersion: String = DEFAULT_APP_VERSION,
 ) {
     Box(
         modifier = Modifier
@@ -134,8 +136,8 @@ fun SplashScreenContent(
 fun SplashScreenPreview() {
     CieloPassTheme(darkTheme = true) {
         SplashScreenContent(
-            statusText = "Verificando transações pendentes...",
-            appVersion = "1.0.0",
+            statusText = MSG_CHECKING_PENDING_TRANSACTIONS,
+            appVersion = DEFAULT_APP_VERSION,
         )
     }
 }

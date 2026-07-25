@@ -6,4 +6,13 @@ import kotlinx.serialization.Serializable
 @Serializable
 data object Splash : NavKey
 
+@Serializable
 data object Events : NavKey
+
+@Serializable
+data class PaymentResult(
+    val orderId: String,
+    val status: String,
+    val message: String? = null,
+    val amount: Long = 0L,
+) : NavKey

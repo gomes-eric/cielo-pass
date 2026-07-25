@@ -2,6 +2,7 @@ package com.cielo.cielopass.core.credentials.data.datasource
 
 import androidx.datastore.core.CorruptionException
 import androidx.datastore.core.Serializer
+import com.cielo.cielopass.core.constants.DataStoreConstants.ERR_DECRYPT_CREDENTIALS_PROTO
 import com.cielo.cielopass.core.credentials.CieloCredentialsProto
 import com.google.crypto.tink.Aead
 import kotlinx.coroutines.Dispatchers
@@ -16,14 +17,16 @@ class CieloCredentialsSerializer(
 
     override suspend fun readFrom(input: InputStream): CieloCredentialsProto =
         withContext(Dispatchers.IO) {
+            val encryptedBytes = input.readBytes()
+
+            if (encryptedBytes.isEmpty()) return@withContext defaultValue
+
             runCatching {
-                val encryptedBytes = input.readBytes()
-                check(encryptedBytes.isNotEmpty()) { "Encrypted bytes stream is empty" }
                 val decryptedBytes = aead.decrypt(encryptedBytes, null)
 
                 CieloCredentialsProto.parseFrom(decryptedBytes)
             }.getOrElse { exception ->
-                throw CorruptionException("Cannot read or decrypt credentials proto.", exception)
+                throw CorruptionException(ERR_DECRYPT_CREDENTIALS_PROTO, exception)
             }
         }
 
