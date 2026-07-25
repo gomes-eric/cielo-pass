@@ -5,10 +5,10 @@ name: CodeQL Analysis
 on:
   push:
     branches:
-      - main
+      - master
   pull_request:
     branches:
-      - main
+      - master
   schedule:
     - cron: "0 6 * * 1"
   workflow_dispatch:
@@ -37,12 +37,23 @@ jobs:
             build-mode: none
             queries: security-extended
           - language: java-kotlin
-            build-mode: none
+            build-mode: manual
             queries: security-and-quality
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
+
+      - name: Set up JDK 17
+        if: matrix.language == 'java-kotlin'
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Gradle
+        if: matrix.language == 'java-kotlin'
+        uses: gradle/actions/setup-gradle@v6
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v4
@@ -51,6 +62,10 @@ jobs:
           build-mode: ${{ matrix.build-mode }}
           config-file: .github/codeql/codeql-config.yml
           queries: ${{ matrix.queries }}
+
+      - name: Build Java/Kotlin
+        if: matrix.language == 'java-kotlin'
+        run: ./gradlew assembleDebug --no-daemon
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v4

@@ -12,44 +12,48 @@ import androidx.compose.ui.platform.LocalContext
 
 private val DarkColorScheme = darkColorScheme(
     primary = CieloBlue,
-    onPrimary = White,
+    onPrimary = White100,
     primaryContainer = Nightfall,
-    onPrimaryContainer = Cloud,
-    secondary = Pistachio,
+    onPrimaryContainer = White100,
+    secondary = White100,
     onSecondary = Nightfall,
-    secondaryContainer = Nightfall,
+    secondaryContainer = DeepNightfall,
     onSecondaryContainer = Cloud,
     tertiary = Pistachio,
     onTertiary = Nightfall,
     error = Sunset,
-    onError = White,
+    onError = White100,
     background = Nightfall,
-    onBackground = Cloud,
+    onBackground = White100,
     surface = Nightfall,
-    onSurface = Cloud,
-    surfaceVariant = Rain,
+    onSurface = White100,
+    surfaceVariant = DeepNightfall,
     onSurfaceVariant = Cloud,
+    outline = CieloBlue,
+    outlineVariant = Cloud,
 )
 
 private val LightColorScheme = lightColorScheme(
     primary = CieloBlue,
-    onPrimary = White,
+    onPrimary = White100,
     primaryContainer = Cloud,
     onPrimaryContainer = Nightfall,
-    secondary = Nightfall,
-    onSecondary = White,
+    secondary = Rain,
+    onSecondary = White100,
     secondaryContainer = Cloud,
-    onSecondaryContainer = Nightfall,
+    onSecondaryContainer = Rain,
     tertiary = Pistachio,
     onTertiary = Nightfall,
     error = Sunset,
-    onError = White,
-    background = White,
+    onError = White100,
+    background = White100,
     onBackground = Rain,
     surface = Cloud,
     onSurface = Nightfall,
     surfaceVariant = Cloud,
     onSurfaceVariant = Rain,
+    outline = Rain,
+    outlineVariant = Cloud,
 )
 
 @Composable
@@ -58,9 +62,9 @@ fun CieloPassTheme(
     dynamicColor: Boolean = false,
     content: @Composable () -> Unit,
 ) {
+    val context = LocalContext.current
     val colorScheme = when {
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
 

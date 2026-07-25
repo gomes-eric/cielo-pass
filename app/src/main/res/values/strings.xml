@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">CieloPass</string>
+    <string name="splash_logo_content_description">CieloPass Logo</string>
+    <string name="splash_default_status_text">Iniciando sistema...</string>
+    <string name="splash_app_version">CieloPass • v%1$s</string>
+    <string name="splash_cielo_ecosystem_subtitle">Integrado ao Ecossistema Cielo Smart</string>
 </resources>

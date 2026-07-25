@@ -163,3 +163,12 @@ tmbootpicker.efi
 
 # Log files created by default by the nohup command
 nohup.out
+
+
+
+##############
+### Others ###
+##############
+
+# Environment variables
+.env
