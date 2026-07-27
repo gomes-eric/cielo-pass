@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -30,7 +31,6 @@ import com.cielo.cielopass.R
 import com.cielo.cielopass.core.constants.SplashConstants.DEFAULT_APP_VERSION
 import com.cielo.cielopass.core.constants.SplashConstants.MSG_CHECKING_PENDING_TRANSACTIONS
 import com.cielo.cielopass.core.theme.CieloPassTheme
-import com.cielo.cielopass.features.splash.presentation.SplashEffect.NavigateToEvents
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -40,11 +40,9 @@ fun SplashScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
-    LaunchedEffect(Unit) {
-        viewModel.effect.collect { effect ->
-            when (effect) {
-                NavigateToEvents -> onNavigateToEvents()
-            }
+    LaunchedEffect(state.isLoading, state.config) {
+        if (!state.isLoading && state.config != null) {
+            onNavigateToEvents()
         }
     }
 
@@ -63,70 +61,76 @@ fun SplashScreenContent(
     statusText: String = stringResource(R.string.splash_default_status_text),
     appVersion: String = DEFAULT_APP_VERSION,
 ) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(
-                brush = Brush.verticalGradient(
-                    colors = listOf(
-                        MaterialTheme.colorScheme.primaryContainer,
-                        MaterialTheme.colorScheme.secondaryContainer,
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+    ) { innerPadding ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(
+                            MaterialTheme.colorScheme.primaryContainer,
+                            MaterialTheme.colorScheme.secondaryContainer,
+                        ),
                     ),
                 ),
-            ),
-        contentAlignment = Alignment.Center,
-    ) {
-        Column(
-            modifier = Modifier.padding(24.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Image(
-                painter = painterResource(id = R.drawable.ic_cielopass_logo),
-                contentDescription = stringResource(R.string.splash_logo_content_description),
-                modifier = Modifier.height(72.dp),
-            )
-
-            Spacer(modifier = Modifier.height(120.dp))
-
-            Box(
-                modifier = Modifier.height(52.dp),
-                contentAlignment = Alignment.TopCenter,
+            Column(
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .padding(24.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                if (isLoading) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(36.dp),
-                        color = MaterialTheme.colorScheme.primary,
-                        strokeWidth = 3.dp,
-                    )
+                Image(
+                    painter = painterResource(id = R.drawable.ic_cielopass_logo),
+                    contentDescription = stringResource(R.string.splash_logo_content_description),
+                    modifier = Modifier.height(72.dp),
+                )
+
+                Spacer(modifier = Modifier.height(80.dp))
+
+                Box(
+                    modifier = Modifier.height(52.dp),
+                    contentAlignment = Alignment.TopCenter,
+                ) {
+                    if (isLoading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(36.dp),
+                            color = MaterialTheme.colorScheme.primary,
+                            strokeWidth = 3.dp,
+                        )
+                    }
                 }
+
+                Text(
+                    text = statusText,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onBackground,
+                )
             }
 
-            Text(
-                text = statusText,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.onBackground,
-            )
-        }
-
-        Column(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(bottom = 32.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Text(
-                text = stringResource(R.string.splash_app_version, appVersion),
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onBackground,
-            )
-            Text(
-                text = stringResource(R.string.splash_cielo_ecosystem_subtitle),
-                fontSize = 11.sp,
-                color = MaterialTheme.colorScheme.outline,
-            )
+            Column(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Text(
+                    text = stringResource(R.string.splash_app_version, appVersion),
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground,
+                )
+                Text(
+                    text = stringResource(R.string.splash_cielo_ecosystem_subtitle),
+                    fontSize = 11.sp,
+                    color = MaterialTheme.colorScheme.outline,
+                )
+            }
         }
     }
 }

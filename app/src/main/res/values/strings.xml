@@ -1,7 +1,81 @@
 <resources>
     <string name="app_name">CieloPass</string>
-    <string name="splash_logo_content_description">CieloPass Logo</string>
+    <string name="splash_logo_content_description">Logo CieloPass</string>
     <string name="splash_default_status_text">Iniciando sistema...</string>
     <string name="splash_app_version">CieloPass • v%1$s</string>
     <string name="splash_cielo_ecosystem_subtitle">Integrado ao Ecossistema Cielo Smart</string>
+
+    <!-- General Navigation & Actions -->
+    <string name="action_back">Voltar</string>
+    <string name="action_close">Fechar</string>
+    <string name="action_retry">Tentar Novamente</string>
+    <string name="action_cancel">Cancelar</string>
+    <string name="action_save">Salvar</string>
+    <string name="action_update">Atualizar</string>
+
+    <!-- Event List Screen -->
+    <string name="event_list_title">Eventos Disponíveis</string>
+    <string name="event_availability_sold_out">Esgotado</string>
+    <string name="event_availability_left">%1$d restantes</string>
+    <string name="event_total_tickets">%1$d no total</string>
+
+    <!-- FAB & Quick Actions -->
+    <string name="event_action_add">Novo Evento</string>
+    <string name="event_action_seed">Injetar Exemplos</string>
+    <string name="event_action_clear">Limpar Tudo</string>
+    <string name="event_fab_content_description">Ações Rápidas</string>
+
+    <!-- Empty & Error States -->
+    <string name="event_empty_title">Nenhum evento disponível</string>
+    <string name="event_empty_description">Crie um novo evento ou injete dados demonstrativos para começar a usar.</string>
+    <string name="event_action_generate_examples">Gerar Exemplos</string>
+    <string name="event_action_create_event">Criar Evento</string>
+    <string name="event_error_title">Ocorreu um erro</string>
+
+    <!-- Event Dialogs -->
+    <string name="event_dialog_add_title">Novo Evento</string>
+    <string name="event_dialog_edit_title">Editar Evento</string>
+    <string name="event_dialog_delete_title">Excluir Evento</string>
+    <string name="event_dialog_delete_message">Tem certeza que deseja excluir este evento? Esta ação não poderá ser desfeita.</string>
+
+    <!-- Form Labels -->
+    <string name="event_label_title">Título do Evento</string>
+    <string name="event_label_date">Data e Hora</string>
+    <string name="event_label_date_hint">Data e Hora (ex: 20 Ago • 20:00)</string>
+    <string name="event_label_venue">Local do Evento</string>
+    <string name="event_label_price">Preço dos Ingressos (R$)</string>
+    <string name="event_label_total_tickets">Total de Ingressos</string>
+    <string name="event_label_available_tickets">Disponíveis</string>
+    <string name="event_label_description">Descrição</string>
+    <string name="event_label_image_url">URL da Imagem (Opcional)</string>
+
+    <!-- Event Details Screen -->
+    <string name="event_details_date_time_label">Data &amp; Horário</string>
+    <string name="event_details_venue_label">Local</string>
+    <string name="event_details_stock_label">Estoque de Ingressos</string>
+    <string name="event_details_stock_available">Disponíveis: %1$d de %2$d</string>
+    <string name="event_details_stock_percentage">%1$d%% restante</string>
+    <string name="event_details_about_label">Sobre o Evento</string>
+    <string name="event_details_price_label">Valor do Ingresso</string>
+    <string name="event_action_buy_ticket">Comprar</string>
+    <string name="event_action_delete">Excluir Evento</string>
+    <string name="event_action_edit">Editar Evento</string>
+
+    <!-- ViewModel Toasts & Messages -->
+    <string name="event_toast_seeded">Eventos de demonstração criados com sucesso!</string>
+    <string name="event_toast_cleared">Todos os eventos foram removidos.</string>
+    <string name="event_toast_created">Evento criado com sucesso!</string>
+    <string name="event_toast_load_error">Erro ao carregar lista de eventos.</string>
+    <string name="event_toast_seed_error">Erro ao criar eventos de exemplo.</string>
+    <string name="event_toast_clear_error">Erro ao limpar eventos.</string>
+    <string name="event_toast_add_error">Erro ao adicionar evento.</string>
+    <string name="event_toast_details_load_error">Erro ao carregar detalhes do evento.</string>
+    <string name="event_toast_not_found">Evento não encontrado.</string>
+    <string name="event_toast_sold_out">Ingressos esgotados para este evento.</string>
+    <string name="event_toast_payment_starting">Iniciando pagamento via Cielo...</string>
+    <string name="event_toast_pending_transaction">Existe uma transação pendente em andamento.</string>
+    <string name="event_toast_deleted">Evento excluído com sucesso.</string>
+    <string name="event_toast_delete_error">Erro ao excluir evento.</string>
+    <string name="event_toast_updated">Evento atualizado com sucesso!</string>
+    <string name="event_toast_update_error">Erro ao atualizar evento.</string>
 </resources>
