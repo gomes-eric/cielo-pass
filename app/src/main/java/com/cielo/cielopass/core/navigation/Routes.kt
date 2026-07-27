@@ -7,7 +7,12 @@ import kotlinx.serialization.Serializable
 data object Splash : NavKey
 
 @Serializable
-data object Events : NavKey
+data object EventList : NavKey
+
+@Serializable
+data class EventDetails(
+    val eventId: String,
+) : NavKey
 
 @Serializable
 data class PaymentResult(

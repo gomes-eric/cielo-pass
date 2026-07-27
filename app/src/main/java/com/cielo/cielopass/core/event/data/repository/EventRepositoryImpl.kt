@@ -1,26 +1,29 @@
 package com.cielo.cielopass.core.event.data.repository
 
 import com.cielo.cielopass.core.database.dao.EventDAO
-import com.cielo.cielopass.core.database.entity.EventEntity
+import com.cielo.cielopass.core.event.domain.model.Event
+import com.cielo.cielopass.core.event.domain.model.toDomain
+import com.cielo.cielopass.core.event.domain.model.toEntity
 import com.cielo.cielopass.core.event.domain.repository.EventRepository
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
 class EventRepositoryImpl(
     private val dao: EventDAO,
 ) : EventRepository {
-    override suspend fun insert(event: EventEntity) = dao.insert(event)
+    override suspend fun insert(event: Event) = dao.insert(event.toEntity())
 
-    override suspend fun insert(events: List<EventEntity>) = dao.insertAll(events)
+    override suspend fun insert(events: List<Event>) = dao.insertAll(events.map { it.toEntity() })
 
-    override suspend fun update(event: EventEntity) = dao.update(event)
+    override suspend fun update(event: Event) = dao.update(event.toEntity())
 
-    override suspend fun getById(id: String): EventEntity? = dao.getById(id)
+    override suspend fun getById(id: String): Event? = dao.getById(id)?.toDomain()
 
-    override suspend fun getAll(): List<EventEntity> = dao.getAll()
+    override suspend fun getAll(): List<Event> = dao.getAll().map { it.toDomain() }
 
-    override fun observeAll(): Flow<List<EventEntity>> = dao.observeAll()
+    override fun observeAll(): Flow<List<Event>> = dao.observeAll().map { list -> list.map { it.toDomain() } }
 
-    override fun observeById(id: String): Flow<EventEntity?> = dao.observeById(id)
+    override fun observeById(id: String): Flow<Event?> = dao.observeById(id).map { it?.toDomain() }
 
     override suspend fun deleteById(id: String) = dao.deleteById(id)
 
