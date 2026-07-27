@@ -2,6 +2,7 @@ package com.cielo.cielopass.core.constants
 
 object SplashConstants {
     const val SPLASH_STEP_DELAY_MS = 1500L
+    const val DEFAULT_APP_VERSION = "1.0.0"
 
     const val MSG_INITIALIZING_SYSTEM = "Iniciando sistema..."
     const val MSG_CHECKING_CREDENTIALS = "Verificando credenciais..."

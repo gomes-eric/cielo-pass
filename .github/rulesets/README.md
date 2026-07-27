@@ -8,7 +8,7 @@ pipeline.
 ```text
 .github/rulesets/
 ├── branch-rulesets/
-│   └── 01-main-protection.json
+│   └── 01-master-protection.json
 ├── push-rulesets/
 │   └── 01-sensitive-files-protection.json
 ├── tag-rulesets/
@@ -18,16 +18,16 @@ pipeline.
 
 ## Branch Strategy Alignment
 
-- `main` is the primary protected branch.
+- `master` is the primary protected branch.
 - `feature/*`, `fix/*`, `chore/*`, and `refactor/*` are short-lived topic branches.
-- All changes merge back into `main` through pull requests.
+- All changes merge back into `master` through pull requests.
 
 ## Configured Rulesets
 
-### Main Branch Protection
+### Master Branch Protection
 
-- File: `branch-rulesets/01-main-protection.json`
-- Target: `refs/heads/main`
+- File: `branch-rulesets/01-master-protection.json`
+- Target: `refs/heads/master`
 - Required status checks:
     - `PR Check`
     - `Ktlint Check`
