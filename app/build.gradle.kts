@@ -94,12 +94,10 @@ dependencies {
 
     // Lifecycle Support
     implementation(libs.androidx.lifecycle.runtime.ktx)
-    implementation(libs.androidx.lifecycle.viewmodel.navigation3)
 
-    // Jetpack Navigation 3 & Adaptive Layouts
+    // Jetpack Navigation 3
     implementation(libs.androidx.navigation3.runtime)
     implementation(libs.androidx.navigation3.ui)
-    implementation(libs.androidx.material3.adaptive.navigation3)
 
     // Kotlinx Serialization Core & JSON
     implementation(libs.kotlinx.serialization.core)
@@ -114,10 +112,6 @@ dependencies {
     implementation(libs.koin.android)
     implementation(libs.koin.androidx.compose)
 
-    // Networking (Retrofit & OkHttp)
-    implementation(libs.retrofit)
-    implementation(libs.retrofit.converter.gson)
-
     // Room Database
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
@@ -129,10 +123,6 @@ dependencies {
 
     // Cryptography & Security
     implementation(libs.tink.android)
-    implementation(libs.password4j)
-    implementation(libs.jjwt.api)
-    runtimeOnly(libs.jjwt.impl)
-    runtimeOnly(libs.jjwt.orgjson)
 
     // ZXing QR Code
     implementation(libs.zxing.core)
