@@ -33,14 +33,14 @@ class SplashViewModel(
 
     fun onEvent(event: SplashEvent) {
         when (event) {
-            Init -> initialize()
+            Init -> handleInit()
         }
     }
 
-    private fun initialize() {
+    private fun handleInit() {
         viewModelScope.launch {
-            _state.update {
-                it.copy(
+            _state.update { currentState ->
+                currentState.copy(
                     isLoading = true,
                     statusText = MSG_INITIALIZING_SYSTEM,
                     error = null,
@@ -49,8 +49,8 @@ class SplashViewModel(
 
             initializeAppUseCase()
                 .catch { error ->
-                    _state.update {
-                        it.copy(
+                    _state.update { currentState ->
+                        currentState.copy(
                             isLoading = false,
                             error = error.localizedMessage ?: MSG_UNKNOWN_INITIALIZATION_ERROR,
                         )
@@ -58,8 +58,8 @@ class SplashViewModel(
                 }.collect { step ->
                     when (step) {
                         is Progress -> {
-                            _state.update {
-                                it.copy(
+                            _state.update { currentState ->
+                                currentState.copy(
                                     isLoading = true,
                                     statusText = step.message,
                                 )
@@ -67,13 +67,14 @@ class SplashViewModel(
                         }
 
                         is Completed -> {
-                            _state.update {
-                                it.copy(
+                            _state.update { currentState ->
+                                currentState.copy(
                                     isLoading = false,
                                     config = step.config,
                                     statusText = step.message,
                                 )
                             }
+
                             _effect.send(NavigateToEvents)
                         }
                     }

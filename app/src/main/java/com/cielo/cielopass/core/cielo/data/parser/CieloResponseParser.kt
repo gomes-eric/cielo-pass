@@ -65,6 +65,7 @@ import com.cielo.cielopass.core.constants.CieloConstants.PARAM_ID
 import com.cielo.cielopass.core.constants.CieloConstants.PARAM_MESSAGE
 import com.cielo.cielopass.core.constants.CieloConstants.PARAM_ORDER_ID
 import com.cielo.cielopass.core.constants.CieloConstants.PARAM_REASON
+import com.cielo.cielopass.core.constants.CieloConstants.PARAM_REFERENCE
 import com.cielo.cielopass.core.constants.CieloConstants.PARAM_RESPONSE
 import com.cielo.cielopass.core.constants.CieloConstants.PARAM_RESPONSE_CODE
 import com.cielo.cielopass.core.constants.CieloConstants.SCHEME_ORDER
@@ -306,6 +307,7 @@ class CieloResponseParser(
         rawUri: String,
     ): CieloDeeplinkResponse {
         val orderId = queryParams[PARAM_ORDER_ID] ?: queryParams[PARAM_ID]
+        val reference = queryParams[PARAM_REFERENCE]
         val code = responseCodeParam ?: queryParams[KEY_CODE]?.toIntOrNull() ?: 0
         val reason = queryParams[PARAM_REASON] ?: queryParams[PARAM_MESSAGE]
 
@@ -316,10 +318,10 @@ class CieloResponseParser(
                     message = reason ?: "$MSG_PREFIX_TERMINAL_ERROR ($code)",
                 )
             } else {
-                buildResultFromCode("", code, reason, rawUri)
+                buildResultFromCode("", reference, code, reason, rawUri)
             }
         } else {
-            buildResultFromCode(orderId, code, reason, rawUri)
+            buildResultFromCode(orderId, reference, code, reason, rawUri)
         }
     }
 
@@ -379,35 +381,37 @@ class CieloResponseParser(
                 val id = payment.id ?: return@mapNotNull null
                 val authCode = payment.authCode.orEmpty()
                 val nsu = (payment.cieloCode ?: payment.nsu).orEmpty()
+
                 CieloPaymentResultPayment(id = id, authCode = authCode, nsu = nsu)
             }.orEmpty()
+
+        val paidAmount = dto.paidAmount.takeIf { it != null && it > 0L } ?: dto.payments?.sumOf { it.amount ?: 0L } ?: 0L
 
         return when (code) {
             0 -> Approved(
                 orderId = orderId,
-                amount = dto.paidAmount ?: 0L,
+                reference = dto.reference,
+                amount = paidAmount,
                 items = items,
                 payments = payments,
                 rawResponse = rawJson,
             )
 
             1 -> Cancelled(
-                orderId = orderId,
                 code = code,
                 reason = dto.reason ?: dto.message ?: MSG_USER_CANCELLED_OPERATION,
             )
 
             else -> Failed(
-                orderId = orderId,
                 code = code,
-                reason = dto.reason,
-                message = dto.message ?: dto.reason ?: "$MSG_PREFIX_TRANSACTION_ERROR ($code)",
+                reason = dto.reason ?: dto.message ?: "$MSG_PREFIX_TRANSACTION_ERROR: ($code)",
             )
         }
     }
 
     private fun buildResultFromCode(
         orderId: String,
+        reference: String?,
         code: Int,
         reason: String?,
         rawUri: String,
@@ -415,6 +419,7 @@ class CieloResponseParser(
         val result = when (code) {
             0 -> Approved(
                 orderId = orderId,
+                reference = reference,
                 amount = 0L,
                 items = emptyList(),
                 payments = emptyList(),
@@ -422,16 +427,13 @@ class CieloResponseParser(
             )
 
             1 -> Cancelled(
-                orderId = orderId,
                 code = code,
                 reason = reason ?: MSG_USER_CANCELLED_OPERATION,
             )
 
             else -> Failed(
-                orderId = orderId,
                 code = code,
-                reason = reason,
-                message = reason ?: "$MSG_PREFIX_TRANSACTION_ERROR ($code)",
+                reason = reason ?: "$MSG_PREFIX_TRANSACTION_ERROR ($code)",
             )
         }
 

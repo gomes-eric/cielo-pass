@@ -2,7 +2,9 @@ package com.cielo.cielopass
 
 import android.app.Application
 import com.cielo.cielopass.core.di.coreModule
+import com.cielo.cielopass.features.checkout.di.checkoutModule
 import com.cielo.cielopass.features.events.di.eventsModule
+import com.cielo.cielopass.features.payment.di.paymentModule
 import com.cielo.cielopass.features.splash.di.splashModule
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
@@ -22,6 +24,8 @@ class CieloPassApplication : Application() {
                     coreModule,
                     splashModule,
                     eventsModule,
+                    checkoutModule,
+                    paymentModule,
                 ),
             )
         }

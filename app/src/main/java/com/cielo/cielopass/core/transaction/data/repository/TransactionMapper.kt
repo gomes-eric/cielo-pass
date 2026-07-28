@@ -13,6 +13,9 @@ fun TransactionEntity.toDomain(): Transaction =
         payments = payments,
         rawResponse = rawResponse,
         errorMessage = errorMessage,
+        eventId = eventId,
+        quantity = quantity,
+        inventoryDeducted = inventoryDeducted,
         createdAt = createdAt,
         updatedAt = updatedAt,
     )
@@ -27,6 +30,9 @@ fun Transaction.toEntity(): TransactionEntity =
         payments = payments,
         rawResponse = rawResponse,
         errorMessage = errorMessage,
+        eventId = eventId,
+        quantity = quantity,
+        inventoryDeducted = inventoryDeducted,
         createdAt = createdAt,
         updatedAt = updatedAt,
     )

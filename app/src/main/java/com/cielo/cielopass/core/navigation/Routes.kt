@@ -15,9 +15,14 @@ data class EventDetails(
 ) : NavKey
 
 @Serializable
-data class PaymentResult(
-    val orderId: String,
+data class CheckoutRoute(
+    val eventId: String,
+) : NavKey
+
+@Serializable
+data class PaymentResultRoute(
+    val transactionId: String? = null,
     val status: String,
-    val message: String? = null,
+    val errorMessage: String? = null,
     val amount: Long = 0L,
 ) : NavKey

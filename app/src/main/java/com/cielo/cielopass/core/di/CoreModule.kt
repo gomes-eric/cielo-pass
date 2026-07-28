@@ -30,6 +30,8 @@ import com.cielo.cielopass.core.security.CryptoManager
 import com.cielo.cielopass.core.transaction.data.repository.TransactionRepositoryImpl
 import com.cielo.cielopass.core.transaction.domain.repository.TransactionRepository
 import org.koin.android.ext.koin.androidContext
+import org.koin.core.module.dsl.bind
+import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
 
 val coreModule = module {
@@ -43,7 +45,7 @@ val coreModule = module {
             produceFile = { context.dataStoreFile(CREDENTIALS_FILE_NAME) },
         )
     }
-    single<CieloCredentialsRepository> { CieloCredentialsRepositoryImpl(get()) }
+    singleOf(::CieloCredentialsRepositoryImpl) { bind<CieloCredentialsRepository>() }
 
     // Room Database
     single {
@@ -52,30 +54,30 @@ val coreModule = module {
                 androidContext(),
                 AppDatabase::class.java,
                 DB_NAME,
-            ).fallbackToDestructiveMigration(false)
+            ).fallbackToDestructiveMigration(true)
             .build()
     }
     single { get<AppDatabase>().transactionDAO() }
-    single<TransactionRepository> { TransactionRepositoryImpl(get()) }
+    singleOf(::TransactionRepositoryImpl) { bind<TransactionRepository>() }
     single { get<AppDatabase>().eventDAO() }
-    single<EventRepository> { EventRepositoryImpl(get()) }
+    singleOf(::EventRepositoryImpl) { bind<EventRepository>() }
 
     // Cielo Deeplink Components
     single { CieloResponseParser() }
     single { CieloDeeplinkBuilder() }
-    single<CieloDeeplinkRepository> { CieloDeeplinkRepositoryImpl(androidContext(), get(), get()) }
+    singleOf(::CieloDeeplinkRepositoryImpl) { bind<CieloDeeplinkRepository>() }
 
     // Use Cases
-    single { CheckActiveTransactionUseCase(get()) }
-    single { LaunchCieloPaymentUseCase(get(), get(), get()) }
-    single { LaunchCieloReversalUseCase(get()) }
-    single { LaunchCieloPrintUseCase(get()) }
-    single { LaunchCieloTerminalInfoUseCase(get()) }
-    single { LaunchCieloOrdersListUseCase(get()) }
-    single { LaunchCieloOrderQueryUseCase(get()) }
-    single { LaunchCieloEnabledProductsUseCase(get()) }
-    single { LaunchCieloEstablishmentsUseCase(get()) }
-    single { ProcessCieloResponseUseCase(get(), get()) }
+    singleOf(::CheckActiveTransactionUseCase)
+    singleOf(::LaunchCieloPaymentUseCase)
+    singleOf(::LaunchCieloReversalUseCase)
+    singleOf(::LaunchCieloPrintUseCase)
+    singleOf(::LaunchCieloTerminalInfoUseCase)
+    singleOf(::LaunchCieloOrdersListUseCase)
+    singleOf(::LaunchCieloOrderQueryUseCase)
+    singleOf(::LaunchCieloEnabledProductsUseCase)
+    singleOf(::LaunchCieloEstablishmentsUseCase)
+    singleOf(::ProcessCieloResponseUseCase)
 
     // Presentation / Deeplink Manager
     single { CieloDeeplinkManager(get()) }

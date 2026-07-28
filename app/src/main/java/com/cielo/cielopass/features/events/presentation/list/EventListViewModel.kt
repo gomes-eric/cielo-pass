@@ -31,6 +31,17 @@ import com.cielo.cielopass.core.constants.EventConstants.MSG_EVENT_CREATED_SUCCE
 import com.cielo.cielopass.core.constants.EventConstants.MSG_MOCK_EVENTS_SEEDED
 import com.cielo.cielopass.core.event.domain.model.Event
 import com.cielo.cielopass.core.event.domain.repository.EventRepository
+import com.cielo.cielopass.features.events.presentation.list.EventListEffect.NavigateToDetails
+import com.cielo.cielopass.features.events.presentation.list.EventListEffect.ShowToast
+import com.cielo.cielopass.features.events.presentation.list.EventListEvent.AddEvent
+import com.cielo.cielopass.features.events.presentation.list.EventListEvent.ClearEvents
+import com.cielo.cielopass.features.events.presentation.list.EventListEvent.DismissAddDialog
+import com.cielo.cielopass.features.events.presentation.list.EventListEvent.DismissError
+import com.cielo.cielopass.features.events.presentation.list.EventListEvent.LoadEvents
+import com.cielo.cielopass.features.events.presentation.list.EventListEvent.OpenAddDialog
+import com.cielo.cielopass.features.events.presentation.list.EventListEvent.SeedMockEvents
+import com.cielo.cielopass.features.events.presentation.list.EventListEvent.SelectEvent
+import com.cielo.cielopass.features.events.presentation.list.EventListEvent.ToggleSpeedDial
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -45,8 +56,8 @@ import java.util.UUID
 class EventListViewModel(
     private val eventRepository: EventRepository,
 ) : ViewModel() {
-    private val _state = MutableStateFlow(EventListUiState(isLoading = true))
-    val state: StateFlow<EventListUiState> = _state.asStateFlow()
+    private val _state = MutableStateFlow(EventListState(isLoading = true))
+    val state: StateFlow<EventListState> = _state.asStateFlow()
 
     private val _effect = Channel<EventListEffect>(Channel.BUFFERED)
     val effect = _effect.receiveAsFlow()
@@ -59,56 +70,50 @@ class EventListViewModel(
 
     fun onEvent(event: EventListEvent) {
         when (event) {
-            is EventListEvent.LoadEvents -> observeEvents()
-            is EventListEvent.SelectEvent -> {
-                viewModelScope.launch {
-                    _effect.send(EventListEffect.NavigateToDetails(event.eventId))
-                }
-            }
-            is EventListEvent.ToggleSpeedDial -> {
-                _state.update { it.copy(isSpeedDialExpanded = !it.isSpeedDialExpanded) }
-            }
-            is EventListEvent.OpenAddDialog -> {
-                _state.update { it.copy(isAddDialogOpen = true, isSpeedDialExpanded = false) }
-            }
-            is EventListEvent.DismissAddDialog -> {
-                _state.update { it.copy(isAddDialogOpen = false) }
-            }
-            is EventListEvent.AddEvent -> createEvent(event)
-            is EventListEvent.SeedMockEvents -> seedMockEvents()
-            is EventListEvent.ClearEvents -> clearEvents()
-            is EventListEvent.DismissError -> {
-                _state.update { it.copy(error = null) }
-            }
+            is LoadEvents -> handleLoadEvents()
+            is SelectEvent -> handleSelectEvent(event.eventId)
+            is ToggleSpeedDial -> handleToggleSpeedDial()
+            is OpenAddDialog -> handleOpenAddDialog()
+            is DismissAddDialog -> handleDismissAddDialog()
+            is AddEvent -> handleAddEvent(event)
+            is SeedMockEvents -> handleSeedMockEvents()
+            is ClearEvents -> handleClearEvents()
+            is DismissError -> handleDismissError()
         }
     }
 
-    private fun observeEvents() {
-        observeJob?.cancel()
-        observeJob = viewModelScope.launch {
-            _state.update { it.copy(isLoading = true, error = null) }
-            eventRepository
-                .observeAll()
-                .catch { exception ->
-                    _state.update {
-                        it.copy(
-                            isLoading = false,
-                            error = exception.localizedMessage ?: MSG_ERROR_OBSERVE_EVENTS,
-                        )
-                    }
-                }.collect { events ->
-                    _state.update {
-                        it.copy(
-                            isLoading = false,
-                            events = events,
-                            error = null,
-                        )
-                    }
-                }
+    private fun handleLoadEvents() {
+        observeEvents()
+    }
+
+    private fun handleSelectEvent(eventId: String) {
+        viewModelScope.launch {
+            _effect.send(NavigateToDetails(eventId))
         }
     }
 
-    private fun createEvent(event: EventListEvent.AddEvent) {
+    private fun handleToggleSpeedDial() {
+        _state.update { currentState ->
+            currentState.copy(isSpeedDialExpanded = !currentState.isSpeedDialExpanded)
+        }
+    }
+
+    private fun handleOpenAddDialog() {
+        _state.update { currentState ->
+            currentState.copy(
+                isAddDialogOpen = true,
+                isSpeedDialExpanded = false,
+            )
+        }
+    }
+
+    private fun handleDismissAddDialog() {
+        _state.update { currentState ->
+            currentState.copy(isAddDialogOpen = false)
+        }
+    }
+
+    private fun handleAddEvent(event: AddEvent) {
         viewModelScope.launch {
             try {
                 val newEvent = Event(
@@ -122,21 +127,29 @@ class EventListViewModel(
                     availableTickets = event.availableTickets.coerceIn(0, event.totalTickets.coerceAtLeast(1)),
                     imageUrl = event.imageUrl?.takeIf { it.isNotBlank() },
                 )
+
                 eventRepository.insert(newEvent)
-                _state.update { it.copy(isAddDialogOpen = false) }
-                _effect.send(EventListEffect.ShowToast(MSG_EVENT_CREATED_SUCCESS))
+
+                _state.update { currentState ->
+                    currentState.copy(isAddDialogOpen = false)
+                }
+
+                _effect.send(ShowToast(MSG_EVENT_CREATED_SUCCESS))
             } catch (e: Exception) {
-                _state.update {
-                    it.copy(error = e.localizedMessage ?: MSG_ERROR_CREATE_EVENT)
+                _state.update { currentState ->
+                    currentState.copy(error = e.localizedMessage ?: MSG_ERROR_CREATE_EVENT)
                 }
             }
         }
     }
 
-    private fun seedMockEvents() {
+    private fun handleSeedMockEvents() {
         viewModelScope.launch {
             try {
-                _state.update { it.copy(isSpeedDialExpanded = false) }
+                _state.update { currentState ->
+                    currentState.copy(isSpeedDialExpanded = false)
+                }
+
                 val mockEvents = listOf(
                     Event(
                         id = UUID.randomUUID().toString(),
@@ -179,27 +192,68 @@ class EventListViewModel(
                         availableTickets = 8,
                     ),
                 )
+
                 eventRepository.insert(mockEvents)
-                _effect.send(EventListEffect.ShowToast(MSG_MOCK_EVENTS_SEEDED))
+
+                _effect.send(ShowToast(MSG_MOCK_EVENTS_SEEDED))
             } catch (e: Exception) {
-                _state.update {
-                    it.copy(error = e.localizedMessage ?: MSG_ERROR_SEED_MOCK_EVENTS)
+                _state.update { currentState ->
+                    currentState.copy(error = e.localizedMessage ?: MSG_ERROR_SEED_MOCK_EVENTS)
                 }
             }
         }
     }
 
-    private fun clearEvents() {
+    private fun handleClearEvents() {
         viewModelScope.launch {
             try {
-                _state.update { it.copy(isSpeedDialExpanded = false) }
+                _state.update { currentState ->
+                    currentState.copy(isSpeedDialExpanded = false)
+                }
+
                 eventRepository.deleteAll()
-                _effect.send(EventListEffect.ShowToast(MSG_EVENTS_CLEARED))
+
+                _effect.send(ShowToast(MSG_EVENTS_CLEARED))
             } catch (e: Exception) {
-                _state.update {
-                    it.copy(error = e.localizedMessage ?: MSG_ERROR_CLEAR_EVENTS)
+                _state.update { currentState ->
+                    currentState.copy(error = e.localizedMessage ?: MSG_ERROR_CLEAR_EVENTS)
                 }
             }
+        }
+    }
+
+    private fun handleDismissError() {
+        _state.update { currentState ->
+            currentState.copy(error = null)
+        }
+    }
+
+    private fun observeEvents() {
+        observeJob?.cancel()
+
+        observeJob = viewModelScope.launch {
+            _state.update { currentState ->
+                currentState.copy(isLoading = true, error = null)
+            }
+
+            eventRepository
+                .observeAll()
+                .catch { exception ->
+                    _state.update { currentState ->
+                        currentState.copy(
+                            isLoading = false,
+                            error = exception.localizedMessage ?: MSG_ERROR_OBSERVE_EVENTS,
+                        )
+                    }
+                }.collect { events ->
+                    _state.update { currentState ->
+                        currentState.copy(
+                            isLoading = false,
+                            events = events,
+                            error = null,
+                        )
+                    }
+                }
         }
     }
 }

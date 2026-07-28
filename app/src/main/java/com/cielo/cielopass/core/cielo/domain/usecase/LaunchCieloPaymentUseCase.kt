@@ -21,7 +21,7 @@ class LaunchCieloPaymentUseCase(
     private val credentialsRepository: CieloCredentialsRepository,
 ) {
     suspend operator fun invoke(request: CieloPaymentRequest): LaunchPaymentResult {
-        val id = UUID.randomUUID().toString()
+        val transactionId = UUID.randomUUID().toString()
 
         return try {
             val credentials = credentialsRepository.credentials.firstOrNull()
@@ -31,12 +31,16 @@ class LaunchCieloPaymentUseCase(
             val finalRequest = request.copy(
                 clientId = clientId,
                 accessToken = accessToken,
+                reference = transactionId,
             )
 
             val transaction = Transaction(
-                id = id,
+                id = transactionId,
                 amount = finalRequest.amount,
                 status = STATUS_PENDING,
+                eventId = finalRequest.eventId,
+                quantity = finalRequest.quantity,
+                inventoryDeducted = false,
             )
             val inserted = transactionRepository.insertIfNoPending(transaction)
 
@@ -50,7 +54,7 @@ class LaunchCieloPaymentUseCase(
 
             Success
         } catch (e: Exception) {
-            transactionRepository.updateStatus(id, STATUS_FAILED)
+            transactionRepository.updateStatus(transactionId, STATUS_FAILED)
             LaunchPaymentResult.Error(e.message ?: MSG_ERROR_LAUNCHING_PAYMENT)
         }
     }

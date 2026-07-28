@@ -78,4 +78,41 @@
     <string name="event_toast_delete_error">Erro ao excluir evento.</string>
     <string name="event_toast_updated">Evento atualizado com sucesso!</string>
     <string name="event_toast_update_error">Erro ao atualizar evento.</string>
+
+    <!-- Checkout Screen -->
+    <string name="checkout_title">Checkout de Ingressos</string>
+    <string name="checkout_order_summary_title">Resumo do Pedido</string>
+    <string name="checkout_quantity_label">Quantidade de Ingressos</string>
+    <string name="checkout_total_label">Total do Pedido</string>
+    <string name="checkout_customer_info_title">Dados do Comprador</string>
+    <string name="checkout_label_full_name">Nome Completo</string>
+    <string name="checkout_label_email">E-mail</string>
+    <string name="checkout_label_document">CPF ou CNPJ</string>
+    <string name="checkout_action_proceed_payment">Ir para o Pagamento</string>
+    <string name="action_increase">Aumentar quantidade</string>
+    <string name="action_decrease">Diminuir quantidade</string>
+
+    <!-- Payment Result Screen -->
+    <string name="payment_result_title">Resultado do Pagamento</string>
+    <string name="payment_approved_title">Pagamento Aprovado!</string>
+    <string name="payment_approved_subtitle">Transação processada com sucesso no terminal Cielo Smart.</string>
+    <string name="payment_cancelled_title">Pagamento Cancelado</string>
+    <string name="payment_cancelled_subtitle">A transação foi cancelada pelo usuário no terminal POS.</string>
+    <string name="payment_failed_title">Erro no Pagamento</string>
+    <string name="payment_failed_subtitle">Não foi possível concluir a transação no terminal Cielo.</string>
+    <string name="payment_unknown_title">Status Indeterminado</string>
+    <string name="payment_unknown_subtitle">Aguardando confirmação do status da transação pendente.</string>
+    <string name="payment_label_order">Pedido</string>
+    <string name="payment_label_status">Status</string>
+    <string name="payment_label_amount_paid">Valor Pago</string>
+    <string name="payment_status_approved">APROVADO</string>
+    <string name="action_back_to_events">Voltar para Eventos</string>
+    <string name="action_try_again">Tentar Novamente</string>
+    <string name="action_check_pending_status">Verificar Transação Pendente</string>
+    <string name="unknown">Desconhecido</string>
+
+    <!-- QR Code Ticket -->
+    <string name="qr_code_ticket_title">Ingresso Digital</string>
+    <string name="qr_code_ticket_subtitle">Apresente este QR Code na entrada do evento</string>
+    <string name="qr_code_content_description">QR Code do Ingresso</string>
 </resources>
