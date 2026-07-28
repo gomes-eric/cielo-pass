@@ -38,6 +38,9 @@ koin = "4.2.2"
 # Network & Resiliency
 retrofit = "3.0.0"
 
+# ZXing QR Code
+zxing = "3.5.4"
+
 # Testing
 junit = "4.13.2"
 junitVersion = "1.3.0"
@@ -103,6 +106,9 @@ retrofit-converter-gson = { group = "com.squareup.retrofit2", name = "converter-
 # Cryptography & Security
 tink-android = { group = "com.google.crypto.tink", name = "tink-android", version.ref = "tink" }
 password4j = { group = "com.password4j", name = "password4j", version.ref = "password4j" }
+
+# ZXing QR Code
+zxing-core = { group = "com.google.zxing", name = "core", version.ref = "zxing" }
 
 # Testing
 junit = { group = "junit", name = "junit", version.ref = "junit" }

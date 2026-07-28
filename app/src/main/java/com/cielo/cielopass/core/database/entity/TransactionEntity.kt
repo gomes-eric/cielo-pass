@@ -15,6 +15,9 @@ data class TransactionEntity(
     val payments: List<TransactionPayment> = emptyList(),
     val rawResponse: String? = null,
     val errorMessage: String? = null,
+    val eventId: String? = null,
+    val quantity: Int = 1,
+    val inventoryDeducted: Boolean = false,
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis(),
 )

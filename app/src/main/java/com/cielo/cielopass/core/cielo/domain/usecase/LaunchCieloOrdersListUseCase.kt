@@ -7,7 +7,7 @@ import com.cielo.cielopass.core.cielo.domain.repository.CieloDeeplinkRepository
 class LaunchCieloOrdersListUseCase(
     private val cieloRepository: CieloDeeplinkRepository,
 ) {
-    operator fun invoke(request: CieloOrdersListRequest = CieloOrdersListRequest()) {
+    operator fun invoke(request: CieloOrdersListRequest) {
         cieloRepository.launchDeeplink(OrdersList(request))
     }
 }

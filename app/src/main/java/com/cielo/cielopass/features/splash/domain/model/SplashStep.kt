@@ -11,6 +11,6 @@ sealed interface SplashStep {
 
     data class Completed(
         override val message: String = MSG_SYSTEM_READY,
-        val config: SplashConfig = SplashConfig(isInitialized = true),
+        val config: SplashConfig = SplashConfig(),
     ) : SplashStep
 }

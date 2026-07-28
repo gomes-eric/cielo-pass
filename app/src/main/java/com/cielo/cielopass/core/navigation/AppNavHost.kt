@@ -24,9 +24,10 @@ import com.cielo.cielopass.core.constants.CieloConstants.STATUS_UNKNOWN
 import com.cielo.cielopass.core.constants.NavigationConstants.MSG_PAYMENT_APPROVED_SUCCESS
 import com.cielo.cielopass.core.constants.NavigationConstants.MSG_PAYMENT_CANCELLED_USER
 import com.cielo.cielopass.core.constants.NavigationConstants.MSG_PAYMENT_PROCESS_FAILED
-import com.cielo.cielopass.core.constants.NavigationConstants.UNKNOWN_ORDER_ID
+import com.cielo.cielopass.features.checkout.presentation.CheckoutScreen
 import com.cielo.cielopass.features.events.presentation.details.EventDetailsScreen
 import com.cielo.cielopass.features.events.presentation.list.EventListScreen
+import com.cielo.cielopass.features.payment.presentation.PaymentResultScreen
 import com.cielo.cielopass.features.splash.presentation.SplashScreen
 import org.koin.compose.koinInject
 import com.cielo.cielopass.core.cielo.domain.model.CieloDeeplinkResponse.Unknown as UnknownResponse
@@ -34,11 +35,29 @@ import com.cielo.cielopass.core.cielo.domain.model.CieloPaymentResult.Unknown as
 
 private fun serializeNavKey(key: NavKey): String =
     when (key) {
-        is Splash -> "splash"
-        is EventList -> "event_list"
-        is EventDetails -> "event_details:${key.eventId}"
-        is PaymentResult -> "payment_result:${key.orderId}|${key.status}|${key.message.orEmpty()}|${key.amount}"
-        else -> "splash"
+        is Splash -> {
+            "splash"
+        }
+
+        is EventList -> {
+            "event_list"
+        }
+
+        is EventDetails -> {
+            "event_details:${key.eventId}"
+        }
+
+        is CheckoutRoute -> {
+            "checkout:${key.eventId}"
+        }
+
+        is PaymentResultRoute -> {
+            "payment_result:${key.transactionId.orEmpty()}|${key.status}|${key.amount}|${key.errorMessage.orEmpty()}"
+        }
+
+        else -> {
+            "splash"
+        }
     }
 
 private fun deserializeNavKey(value: String): NavKey =
@@ -56,13 +75,19 @@ private fun deserializeNavKey(value: String): NavKey =
             EventDetails(eventId)
         }
 
+        value.startsWith("checkout:") -> {
+            val eventId = value.removePrefix("checkout:")
+            CheckoutRoute(eventId)
+        }
+
         value.startsWith("payment_result:") -> {
             val parts = value.removePrefix("payment_result:").split("|")
-            PaymentResult(
-                orderId = parts.getOrNull(0).orEmpty(),
+
+            PaymentResultRoute(
+                transactionId = parts.getOrNull(0)?.ifEmpty { null },
                 status = parts.getOrNull(1).orEmpty(),
-                message = parts.getOrNull(2)?.ifEmpty { null },
-                amount = parts.getOrNull(3)?.toLongOrNull() ?: 0L,
+                amount = parts.getOrNull(2)?.toLongOrNull() ?: 0L,
+                errorMessage = parts.getOrNull(3)?.ifEmpty { null },
             )
         }
 
@@ -95,29 +120,26 @@ fun AppNavHost(
             when (response) {
                 is Payment -> {
                     val route = when (val result = response.result) {
-                        is Approved -> PaymentResult(
-                            orderId = result.orderId,
+                        is Approved -> PaymentResultRoute(
+                            transactionId = result.reference,
                             status = STATUS_APPROVED,
-                            message = MSG_PAYMENT_APPROVED_SUCCESS,
+                            errorMessage = MSG_PAYMENT_APPROVED_SUCCESS,
                             amount = result.amount,
                         )
 
-                        is Cancelled -> PaymentResult(
-                            orderId = result.orderId,
+                        is Cancelled -> PaymentResultRoute(
                             status = STATUS_CANCELLED,
-                            message = result.reason ?: MSG_PAYMENT_CANCELLED_USER,
+                            errorMessage = result.reason ?: MSG_PAYMENT_CANCELLED_USER,
                         )
 
-                        is Failed -> PaymentResult(
-                            orderId = result.orderId,
+                        is Failed -> PaymentResultRoute(
                             status = STATUS_FAILED,
-                            message = result.message ?: result.reason ?: MSG_PAYMENT_PROCESS_FAILED,
+                            errorMessage = result.reason ?: MSG_PAYMENT_PROCESS_FAILED,
                         )
 
-                        is UnknownResult -> PaymentResult(
-                            orderId = UNKNOWN_ORDER_ID,
+                        is UnknownResult -> PaymentResultRoute(
                             status = STATUS_UNKNOWN,
-                            message = result.error,
+                            errorMessage = result.error,
                         )
                     }
 
@@ -125,10 +147,9 @@ fun AppNavHost(
                 }
 
                 is TerminalError -> {
-                    val route = PaymentResult(
-                        orderId = UNKNOWN_ORDER_ID,
+                    val route = PaymentResultRoute(
                         status = STATUS_FAILED,
-                        message = response.message ?: MSG_PAYMENT_PROCESS_FAILED,
+                        errorMessage = response.message ?: MSG_PAYMENT_PROCESS_FAILED,
                     )
 
                     backStack.add(route)
@@ -177,13 +198,45 @@ fun AppNavHost(
                             onNavigateBack = {
                                 backStack.removeLastOrNull()
                             },
+                            onNavigateToCheckout = { eventId ->
+                                backStack.add(CheckoutRoute(eventId = eventId))
+                            },
                         )
                     }
                 }
 
-                is PaymentResult -> {
+                is CheckoutRoute -> {
                     NavEntry(key) {
-                        Text("Rota de resultado de pagamento: ${key.orderId}, Status: ${key.status}, Mensagem: ${key.message}")
+                        CheckoutScreen(
+                            eventId = key.eventId,
+                            onNavigateBack = {
+                                backStack.removeLastOrNull()
+                            },
+                            onNavigateToResult = { status, transactionId, errorMessage ->
+                                backStack.add(
+                                    PaymentResultRoute(
+                                        status = status,
+                                        transactionId = transactionId,
+                                        errorMessage = errorMessage,
+                                    ),
+                                )
+                            },
+                        )
+                    }
+                }
+
+                is PaymentResultRoute -> {
+                    NavEntry(key) {
+                        PaymentResultScreen(
+                            route = key,
+                            onNavigateToHome = {
+                                backStack.clear()
+                                backStack.add(EventList)
+                            },
+                            onNavigateToCheckout = {
+                                backStack.removeLastOrNull()
+                            },
+                        )
                     }
                 }
 

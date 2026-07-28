@@ -2,7 +2,7 @@ package com.cielo.cielopass.features.events.presentation.list
 
 import com.cielo.cielopass.core.event.domain.model.Event
 
-data class EventListUiState(
+data class EventListState(
     val isLoading: Boolean = false,
     val events: List<Event> = emptyList(),
     val error: String? = null,

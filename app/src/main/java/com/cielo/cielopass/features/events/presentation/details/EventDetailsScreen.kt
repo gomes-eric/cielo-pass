@@ -6,18 +6,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -25,13 +21,7 @@ import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.ConfirmationNumber
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.ShoppingCart
-import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -40,36 +30,40 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cielo.cielopass.R
 import com.cielo.cielopass.core.event.domain.model.Event
-import com.cielo.cielopass.core.theme.CieloBlue
 import com.cielo.cielopass.core.theme.CieloPassTheme
-import com.cielo.cielopass.core.theme.Nightfall
+import com.cielo.cielopass.features.events.presentation.details.EventDetailsEffect.NavigateBack
+import com.cielo.cielopass.features.events.presentation.details.EventDetailsEffect.ShowToast
+import com.cielo.cielopass.features.events.presentation.details.EventDetailsEvent.ConfirmDelete
+import com.cielo.cielopass.features.events.presentation.details.EventDetailsEvent.DismissDeleteConfirm
+import com.cielo.cielopass.features.events.presentation.details.EventDetailsEvent.DismissEditDialog
+import com.cielo.cielopass.features.events.presentation.details.EventDetailsEvent.LoadEvent
+import com.cielo.cielopass.features.events.presentation.details.EventDetailsEvent.OpenDeleteConfirm
+import com.cielo.cielopass.features.events.presentation.details.EventDetailsEvent.OpenEditDialog
+import com.cielo.cielopass.features.events.presentation.details.EventDetailsEvent.UpdateEvent
+import com.cielo.cielopass.features.events.presentation.details.components.BottomPaymentCtaBar
+import com.cielo.cielopass.features.events.presentation.details.components.DeleteConfirmDialog
+import com.cielo.cielopass.features.events.presentation.details.components.EditEventDialog
+import com.cielo.cielopass.features.events.presentation.details.components.ErrorDetailsView
+import com.cielo.cielopass.features.events.presentation.details.components.HeaderImageBanner
 import org.koin.androidx.compose.koinViewModel
 import java.text.NumberFormat
 import java.util.Locale
@@ -79,22 +73,23 @@ fun EventDetailsScreen(
     eventId: String,
     viewModel: EventDetailsViewModel = koinViewModel(key = eventId),
     onNavigateBack: () -> Unit = {},
+    onNavigateToCheckout: (eventId: String) -> Unit = {},
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
     LaunchedEffect(eventId) {
-        viewModel.onEvent(EventDetailsEvent.LoadEvent(eventId))
+        viewModel.onEvent(LoadEvent(eventId))
     }
 
     LaunchedEffect(Unit) {
         viewModel.effect.collect { effect ->
             when (effect) {
-                is EventDetailsEffect.NavigateBack -> {
+                is NavigateBack -> {
                     onNavigateBack()
                 }
 
-                is EventDetailsEffect.ShowToast -> {
+                is ShowToast -> {
                     Toast.makeText(context, effect.message, Toast.LENGTH_SHORT).show()
                 }
             }
@@ -105,6 +100,7 @@ fun EventDetailsScreen(
         state = state,
         onEvent = viewModel::onEvent,
         onNavigateBack = onNavigateBack,
+        onNavigateToCheckout = { onNavigateToCheckout(eventId) },
     )
 }
 
@@ -114,6 +110,7 @@ fun EventDetailsContent(
     state: EventDetailsUiState,
     onEvent: (EventDetailsEvent) -> Unit,
     onNavigateBack: () -> Unit = {},
+    onNavigateToCheckout: () -> Unit = {},
 ) {
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -138,13 +135,13 @@ fun EventDetailsContent(
                 },
                 actions = {
                     if (state.event != null) {
-                        IconButton(onClick = { onEvent(EventDetailsEvent.OpenEditDialog) }) {
+                        IconButton(onClick = { onEvent(OpenEditDialog) }) {
                             Icon(
                                 imageVector = Icons.Default.Edit,
                                 contentDescription = stringResource(R.string.event_action_edit),
                             )
                         }
-                        IconButton(onClick = { onEvent(EventDetailsEvent.OpenDeleteConfirm) }) {
+                        IconButton(onClick = { onEvent(OpenDeleteConfirm) }) {
                             Icon(
                                 imageVector = Icons.Default.Delete,
                                 contentDescription = stringResource(R.string.event_action_delete),
@@ -165,7 +162,7 @@ fun EventDetailsContent(
                 BottomPaymentCtaBar(
                     price = state.event.price,
                     isAvailable = state.event.availableTickets > 0,
-                    onBuyClick = { onEvent(EventDetailsEvent.BuyTicket) },
+                    onBuyClick = onNavigateToCheckout,
                 )
             }
         },
@@ -192,7 +189,7 @@ fun EventDetailsContent(
                 }
 
                 state.event != null -> {
-                    EventDetailsContent(
+                    EventDetailsBody(
                         event = state.event,
                         modifier = Modifier.fillMaxSize(),
                     )
@@ -203,18 +200,18 @@ fun EventDetailsContent(
 
     if (state.isDeleteConfirmDialogOpen) {
         DeleteConfirmDialog(
-            onDismiss = { onEvent(EventDetailsEvent.DismissDeleteConfirm) },
-            onConfirm = { onEvent(EventDetailsEvent.ConfirmDelete) },
+            onDismiss = { onEvent(DismissDeleteConfirm) },
+            onConfirm = { onEvent(ConfirmDelete) },
         )
     }
 
     if (state.isEditDialogOpen && state.event != null) {
         EditEventDialog(
             event = state.event,
-            onDismiss = { onEvent(EventDetailsEvent.DismissEditDialog) },
+            onDismiss = { onEvent(DismissEditDialog) },
             onConfirm = { title, desc, date, venue, price, total, avail, imgUrl ->
                 onEvent(
-                    EventDetailsEvent.UpdateEvent(
+                    UpdateEvent(
                         title = title,
                         description = desc,
                         date = date,
@@ -231,7 +228,7 @@ fun EventDetailsContent(
 }
 
 @Composable
-private fun EventDetailsContent(
+private fun EventDetailsBody(
     event: Event,
     modifier: Modifier = Modifier,
 ) {
@@ -241,13 +238,11 @@ private fun EventDetailsContent(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        // Header Image Placeholder Banner
         HeaderImageBanner(
             title = event.title,
             imageUrl = event.imageUrl,
         )
 
-        // Title and Date/Venue Card
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
@@ -285,12 +280,14 @@ private fun EventDetailsContent(
                             modifier = Modifier.size(18.dp),
                         )
                     }
+
                     Column {
                         Text(
                             text = stringResource(R.string.event_details_date_time_label),
                             style = MaterialTheme.typography.labelMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
+
                         Text(
                             text = event.date,
                             style = MaterialTheme.typography.bodyMedium,
@@ -317,12 +314,14 @@ private fun EventDetailsContent(
                             modifier = Modifier.size(18.dp),
                         )
                     }
+
                     Column {
                         Text(
                             text = stringResource(R.string.event_details_venue_label),
                             style = MaterialTheme.typography.labelMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
+
                         Text(
                             text = event.venue,
                             style = MaterialTheme.typography.bodyMedium,
@@ -333,7 +332,6 @@ private fun EventDetailsContent(
             }
         }
 
-        // Pricing & Ticket Stock Breakdown
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
@@ -360,6 +358,7 @@ private fun EventDetailsContent(
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.primary,
                         )
+
                         Text(
                             text = stringResource(R.string.event_details_stock_label),
                             style = MaterialTheme.typography.titleMedium,
@@ -395,6 +394,7 @@ private fun EventDetailsContent(
                             style = MaterialTheme.typography.bodyMedium,
                             fontWeight = FontWeight.Medium,
                         )
+
                         Text(
                             text = stringResource(
                                 R.string.event_details_stock_percentage,
@@ -418,7 +418,6 @@ private fun EventDetailsContent(
             }
         }
 
-        // Full Description text block
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
@@ -436,6 +435,7 @@ private fun EventDetailsContent(
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                 )
+
                 Text(
                     text = event.description,
                     style = MaterialTheme.typography.bodyMedium,
@@ -443,304 +443,6 @@ private fun EventDetailsContent(
                     lineHeight = MaterialTheme.typography.bodyMedium.lineHeight * 1.2f,
                 )
             }
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-    }
-}
-
-@Composable
-private fun HeaderImageBanner(
-    title: String,
-    imageUrl: String?,
-    modifier: Modifier = Modifier,
-) {
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(180.dp)
-            .clip(RoundedCornerShape(16.dp))
-            .background(
-                brush = Brush.linearGradient(
-                    colors = listOf(CieloBlue, Nightfall),
-                ),
-            ),
-        contentAlignment = Alignment.Center,
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-            modifier = Modifier.padding(16.dp),
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(60.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.2f)),
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Event,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onPrimary,
-                    modifier = Modifier.size(36.dp),
-                )
-            }
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onPrimary,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-            )
-        }
-    }
-}
-
-@Composable
-private fun BottomPaymentCtaBar(
-    price: Double,
-    isAvailable: Boolean,
-    onBuyClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Surface(
-        modifier = modifier.fillMaxWidth(),
-        shadowElevation = 8.dp,
-        color = MaterialTheme.colorScheme.surface,
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .navigationBarsPadding()
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Column {
-                Text(
-                    text = stringResource(R.string.event_details_price_label),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                Text(
-                    text = formatCurrency(price),
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.ExtraBold,
-                    color = MaterialTheme.colorScheme.primary,
-                )
-            }
-
-            Button(
-                onClick = onBuyClick,
-                enabled = isAvailable,
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary,
-                ),
-            ) {
-                Icon(
-                    imageVector = Icons.Default.ShoppingCart,
-                    contentDescription = null,
-                    modifier = Modifier.size(18.dp),
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = if (isAvailable) {
-                        stringResource(R.string.event_action_buy_ticket)
-                    } else {
-                        stringResource(R.string.event_availability_sold_out)
-                    },
-                    style = MaterialTheme.typography.labelLarge,
-                    fontWeight = FontWeight.Bold,
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun DeleteConfirmDialog(
-    onDismiss: () -> Unit,
-    onConfirm: () -> Unit,
-) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(stringResource(R.string.event_dialog_delete_title)) },
-        text = { Text(stringResource(R.string.event_dialog_delete_message)) },
-        confirmButton = {
-            Button(
-                onClick = onConfirm,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.error,
-                ),
-            ) {
-                Text(stringResource(R.string.event_action_delete))
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text(stringResource(R.string.action_cancel))
-            }
-        },
-    )
-}
-
-@Composable
-private fun EditEventDialog(
-    event: Event,
-    onDismiss: () -> Unit,
-    onConfirm: (
-        title: String,
-        description: String,
-        date: String,
-        venue: String,
-        price: Double,
-        totalTickets: Int,
-        availableTickets: Int,
-        imageUrl: String?,
-    ) -> Unit,
-) {
-    var title by remember { mutableStateOf(event.title) }
-    var description by remember { mutableStateOf(event.description) }
-    var date by remember { mutableStateOf(event.date) }
-    var venue by remember { mutableStateOf(event.venue) }
-    var priceText by remember { mutableStateOf(event.price.toString()) }
-    var totalTicketsText by remember { mutableStateOf(event.totalTickets.toString()) }
-    var availableTicketsText by remember { mutableStateOf(event.availableTickets.toString()) }
-    var imageUrl by remember { mutableStateOf(event.imageUrl ?: "") }
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(stringResource(R.string.event_dialog_edit_title), fontWeight = FontWeight.Bold) },
-        text = {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                OutlinedTextField(
-                    value = title,
-                    onValueChange = { title = it },
-                    label = { Text(stringResource(R.string.event_label_title)) },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-                OutlinedTextField(
-                    value = date,
-                    onValueChange = { date = it },
-                    label = { Text(stringResource(R.string.event_label_date)) },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-                OutlinedTextField(
-                    value = venue,
-                    onValueChange = { venue = it },
-                    label = { Text(stringResource(R.string.event_label_venue)) },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-                OutlinedTextField(
-                    value = priceText,
-                    onValueChange = { priceText = it },
-                    label = { Text(stringResource(R.string.event_label_price)) },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    OutlinedTextField(
-                        value = totalTicketsText,
-                        onValueChange = { totalTicketsText = it },
-                        label = { Text(stringResource(R.string.event_label_total_tickets)) },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                        singleLine = true,
-                        modifier = Modifier.weight(1f),
-                    )
-                    OutlinedTextField(
-                        value = availableTicketsText,
-                        onValueChange = { availableTicketsText = it },
-                        label = { Text(stringResource(R.string.event_label_available_tickets)) },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                        singleLine = true,
-                        modifier = Modifier.weight(1f),
-                    )
-                }
-                OutlinedTextField(
-                    value = description,
-                    onValueChange = { description = it },
-                    label = { Text(stringResource(R.string.event_label_description)) },
-                    modifier = Modifier.fillMaxWidth(),
-                    maxLines = 3,
-                )
-                OutlinedTextField(
-                    value = imageUrl,
-                    onValueChange = { imageUrl = it },
-                    label = { Text(stringResource(R.string.event_label_image_url)) },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-            }
-        },
-        confirmButton = {
-            Button(
-                onClick = {
-                    val price = priceText.replace(',', '.').toDoubleOrNull() ?: event.price
-                    val total = totalTicketsText.toIntOrNull() ?: event.totalTickets
-                    val avail = availableTicketsText.toIntOrNull() ?: event.availableTickets
-                    onConfirm(
-                        title,
-                        description,
-                        date,
-                        venue,
-                        price,
-                        total,
-                        avail,
-                        imageUrl.ifBlank { null },
-                    )
-                },
-            ) {
-                Text(stringResource(R.string.action_update))
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text(stringResource(R.string.action_cancel))
-            }
-        },
-    )
-}
-
-@Composable
-private fun ErrorDetailsView(
-    message: String,
-    onBack: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Column(
-        modifier = modifier.padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
-    ) {
-        Icon(
-            imageVector = Icons.Default.Warning,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.error,
-            modifier = Modifier.size(64.dp),
-        )
-        Spacer(modifier = Modifier.height(12.dp))
-        Text(
-            text = message,
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        Button(onClick = onBack) {
-            Text(stringResource(R.string.action_back))
         }
     }
 }
@@ -753,7 +455,6 @@ private fun formatCurrency(amount: Double): String =
         "R$ %.2f".format(amount)
     }
 
-// Previews for Step 5
 @Preview(showBackground = true, name = "Success State")
 @Composable
 private fun EventDetailsScreenSuccessPreview() {

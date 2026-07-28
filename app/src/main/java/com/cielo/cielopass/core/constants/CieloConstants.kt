@@ -23,6 +23,7 @@ object CieloConstants {
     const val PARAM_RESPONSE = "response"
     const val PARAM_RESPONSE_CODE = "responsecode"
     const val PARAM_ORDER_ID = "order_id"
+    const val PARAM_REFERENCE = "reference"
     const val PARAM_ID = "id"
     const val PARAM_REASON = "reason"
     const val PARAM_MESSAGE = "message"

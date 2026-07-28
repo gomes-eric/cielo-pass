@@ -89,6 +89,7 @@ class CieloDeeplinkBuilder(
             installments = request.installments,
             paymentCode = request.paymentCode?.code,
             value = request.amount.toString(),
+            reference = request.reference,
             items = request.items.map {
                 CieloItemDTO(
                     name = it.name,

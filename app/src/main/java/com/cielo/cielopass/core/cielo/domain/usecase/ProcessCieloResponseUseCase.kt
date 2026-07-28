@@ -25,28 +25,38 @@ class ProcessCieloResponseUseCase(
 
         val response = cieloRepository.parseResponseUri(uriString)
 
-        if (response is Payment) {
-            when (val result = response.result) {
-                is Approved -> {
-                    updateTransactionPendingStatus(result.orderId, STATUS_APPROVED, result)
-                }
+        when (response) {
+            is Payment -> {
+                when (val result = response.result) {
+                    is Approved -> {
+                        updateTransactionPendingStatus(result.orderId, STATUS_APPROVED, result, null, result.reference)
+                    }
 
-                is Cancelled -> {
-                    updateTransactionPendingStatus(result.orderId, STATUS_CANCELLED, null, result.reason)
-                }
+                    is Cancelled -> {
+                        updateTransactionPendingStatus("", STATUS_CANCELLED, null, result.reason)
+                    }
 
-                is Failed -> {
-                    updateTransactionPendingStatus(result.orderId, STATUS_FAILED, null, result.message ?: result.reason)
-                }
+                    is Failed -> {
+                        updateTransactionPendingStatus("", STATUS_FAILED, null, result.reason)
+                    }
 
-                is UnknownResult -> {
-                    cancelPendingTransaction()
+                    is UnknownResult -> {
+                        cancelPendingTransaction()
+                    }
                 }
             }
-        } else if (response is TerminalError) {
-            cancelPendingTransaction(response.message)
-        } else if (response is UnknownResponse) {
-            cancelPendingTransaction()
+
+            is TerminalError -> {
+                cancelPendingTransaction(response.message)
+            }
+
+            is UnknownResponse -> {
+                cancelPendingTransaction()
+            }
+
+            else -> {
+                cancelPendingTransaction()
+            }
         }
 
         return response
@@ -57,17 +67,18 @@ class ProcessCieloResponseUseCase(
         status: String,
         approvedResult: Approved? = null,
         errorMessage: String? = null,
+        reference: String? = null,
     ) {
-        val pending = transactionRepository.getPending() ?: return
-        val domainItems = approvedResult?.items?.map { TransactionItem(id = it.id, sku = it.sku) }
-        val domainPayments = approvedResult?.payments?.map { TransactionPayment(id = it.id, authCode = it.authCode, nsu = it.nsu) }
+        val pending = (reference?.takeIf { it.isNotBlank() }?.let { transactionRepository.getById(it) }) ?: transactionRepository.getPending() ?: return
+        val items = approvedResult?.items?.map { TransactionItem(id = it.id, sku = it.sku) }
+        val payments = approvedResult?.payments?.map { TransactionPayment(id = it.id, authCode = it.authCode, nsu = it.nsu) }
 
         val updated = pending.copy(
             orderId = orderId.ifBlank { pending.orderId },
             status = status,
             amount = approvedResult?.amount ?: pending.amount,
-            items = domainItems?.takeIf { it.isNotEmpty() } ?: pending.items,
-            payments = domainPayments?.takeIf { it.isNotEmpty() } ?: pending.payments,
+            items = items?.takeIf { it.isNotEmpty() } ?: pending.items,
+            payments = payments?.takeIf { it.isNotEmpty() } ?: pending.payments,
             rawResponse = approvedResult?.rawResponse ?: pending.rawResponse,
             errorMessage = errorMessage ?: pending.errorMessage,
             updatedAt = System.currentTimeMillis(),

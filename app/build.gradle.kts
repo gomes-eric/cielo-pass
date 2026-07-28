@@ -134,6 +134,9 @@ dependencies {
     runtimeOnly(libs.jjwt.impl)
     runtimeOnly(libs.jjwt.orgjson)
 
+    // ZXing QR Code
+    implementation(libs.zxing.core)
+
     // Testing (Unit & Instrumented)
     testImplementation(libs.junit)
     testImplementation(libs.mockk)
