@@ -2,7 +2,7 @@
 # Tooling & Plugins
 agp = "9.3.1"
 kotlin = "2.4.0"
-kotlinSerialization = "2.4.0"
+kotlinSerialization = "2.4.10"
 ktlint = "14.2.0"
 ksp = "2.3.10"
 protobufPlugin = "0.10.0"
