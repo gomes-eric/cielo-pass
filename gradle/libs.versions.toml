@@ -27,7 +27,7 @@ coroutines = "1.10.1"
 
 # Serialization & Protobuf
 kotlinxSerialization = "1.11.0"
-protobuf = "4.35.1"
+protobuf = "4.36.0"
 
 # Dependency Injection
 koin = "4.2.2"
