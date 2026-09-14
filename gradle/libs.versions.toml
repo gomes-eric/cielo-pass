@@ -11,7 +11,7 @@ desugarJdkLibs = "2.1.5"
 # Core AndroidX & Compose
 coreKtx = "1.19.0"
 activityCompose = "1.13.0"
-composeBom = "2026.06.01"
+composeBom = "2026.09.00"
 lifecycle = "2.11.0"
 room = "2.8.4"
 datastore = "1.2.1"
